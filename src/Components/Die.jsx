@@ -1,7 +1,8 @@
+import "./Die.css";
 export default function Die(props) {
   return (
     <>
-      <button>{props.values}</button>
+      <button>{props.value}</button>
     </>
   );
 }

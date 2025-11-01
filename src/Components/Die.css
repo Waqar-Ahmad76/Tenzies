@@ -1,0 +1,6 @@
+main {
+  min-height: 80%;
+  /* max-width: 80%;
+    width: 75%; */
+  display: grid;
+}
