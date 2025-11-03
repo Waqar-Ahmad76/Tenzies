@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import Die from "./Components/Die";
 import { nanoid } from "nanoid";
+import Confetti from "react-confetti";
 import "./App.css";
 
 function App() {
@@ -16,6 +17,9 @@ function App() {
     return numbers;
   }
 
+  const [dice, setDice] = useState(() => getRandomNumber());
+  const buttonRef = useRef(null);
+
   function hold(id) {
     // console.log(id);
     // let heldDice=dice.find(dice => dice.id===id);
@@ -25,7 +29,6 @@ function App() {
       });
     });
   }
-  const [dice, setDice] = useState(getRandomNumber());
 
   let diceElements = dice.map((num) => (
     <Die
@@ -37,25 +40,53 @@ function App() {
     />
   ));
   function handleRoll() {
-    setDice((prev) => {
-      return prev.map((die) => {
-        return die.isHeld
-          ? die
-          : { ...die, value: Math.round(Math.random() * 6) + 1 };
+    if (gameWon) {
+      setDice((prev) => {
+        return prev.map((die) => {
+          return {
+            ...die,
+            isHeld: false,
+            value: Math.round(Math.random() * 6) + 1,
+          };
+        });
       });
-    });
+    } else {
+      setDice((prev) => {
+        return prev.map((die) => {
+          return die.isHeld
+            ? die
+            : { ...die, value: Math.round(Math.random() * 6) + 1 };
+        });
+      });
+    }
   }
+
+  const gameWon =
+    dice.every((die) => die.isHeld) &&
+    dice.every((die) => die.value === dice[0].value);
+
+  useEffect(() => {
+    if (gameWon) {
+      buttonRef.current.focus();
+    }
+  }, [gameWon]);
 
   return (
     <main>
+      {gameWon && <Confetti />}
+      <div aria-live="polite" className="sr-only">
+        {gameWon && (
+          <p>Congrats! You won the game. Press new game to play again</p>
+        )}
+      </div>
       <h1 className="title">Tenzies</h1>
       <p className="instructions">
         Roll until all dice are the same. Click each die to freeze it at its
         current value between rolls.
       </p>
       <div className="container item">{diceElements}</div>
-      <button className="item" onClick={handleRoll}>
-        Roll
+      <button ref={buttonRef} className="item" onClick={handleRoll}>
+        {gameWon ? "New Game" : "Roll"}
       </button>
     </main>
   );
